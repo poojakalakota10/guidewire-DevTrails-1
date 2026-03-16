@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Bar } from 'react-chartjs-2';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -9,7 +9,12 @@ import {
   Title,
   Tooltip,
   Legend,
-} from 'chart.js';
+} from "chart.js";
+
+import { fetchSimulatedAPIData } from "../modules/apiSimulator";
+import { calculateRiskScore } from "../modules/riskAssessment";
+import { processClaim } from "../modules/claimEngine";
+import RiskMap from "../components/RiskMap";
 
 ChartJS.register(
   CategoryScale,
@@ -22,26 +27,32 @@ ChartJS.register(
 
 function WorkerDashboard() {
   const navigate = useNavigate();
+
   const [worker, setWorker] = useState(null);
+  const [apiData, setApiData] = useState(null);
+  const [riskAssessment, setRiskAssessment] = useState(null);
+  const [claimStatus, setClaimStatus] = useState(null);
+  const [disruptionAlert, setDisruptionAlert] = useState(null);
+
   const [analytics, setAnalytics] = useState({
     totalEarningsProtected: 12500,
     totalIncomeLost: 3200,
     totalClaimsTriggered: 8,
-    weeklyCoverageRemaining: 1200
+    weeklyCoverageRemaining: 1200,
   });
 
   const chartData = {
-    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+    labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
     datasets: [
       {
-        label: 'Income Gained (₹)',
+        label: "Income Protected",
         data: [2800, 3200, 2900, 3600],
-        backgroundColor: 'rgba(34, 197, 94, 0.8)',
+        backgroundColor: "rgba(34,197,94,0.7)",
       },
       {
-        label: 'Income Lost (₹)',
+        label: "Income Lost",
         data: [800, 600, 1200, 600],
-        backgroundColor: 'rgba(239, 68, 68, 0.8)',
+        backgroundColor: "rgba(239,68,68,0.7)",
       },
     ],
   };
@@ -49,158 +60,292 @@ function WorkerDashboard() {
   const chartOptions = {
     responsive: true,
     plugins: {
-      legend: {
-        position: 'top',
-      },
+      legend: { position: "top" },
       title: {
         display: true,
-        text: 'Weekly Income Protection Performance',
+        text: "Weekly Income Protection Performance",
       },
     },
   };
-  
+
   useEffect(() => {
-    // Check if worker data is saved and coverage is active
-    const data = localStorage.getItem('devtrails_worker');
-    const isActive = localStorage.getItem('devtrails_active');
-    
-    if (!data || !isActive) {
-      navigate('/');
+    const currentUser = localStorage.getItem("gigshield_current_user");
+
+    if (!currentUser) {
+      navigate("/login");
       return;
     }
-    setWorker(JSON.parse(data));
+
+    const user = JSON.parse(currentUser);
+    setWorker(user);
+
+    const savedAnalytics = JSON.parse(
+      localStorage.getItem(`gigshield_analytics_${user.email}`) || "null"
+    );
+
+    if (savedAnalytics) setAnalytics(savedAnalytics);
   }, [navigate]);
+
+  useEffect(() => {
+    const loadAPI = async () => {
+      const data = await fetchSimulatedAPIData("hyderabad");
+      setApiData(data);
+    };
+
+    loadAPI();
+
+    const interval = setInterval(loadAPI, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (apiData && worker) {
+      const risk = calculateRiskScore(apiData, worker);
+      setRiskAssessment(risk);
+    }
+  }, [apiData, worker]);
+
+  useEffect(() => {
+    if (riskAssessment && riskAssessment.triggers.length > 0) {
+      // Show disruption alert
+      const triggerMessage = riskAssessment.triggers.includes('Heavy Rain')
+        ? 'Heavy rain detected in delivery zones'
+        : riskAssessment.triggers.includes('Severe Pollution')
+        ? 'Severe pollution levels detected'
+        : riskAssessment.triggers.includes('Extreme Heat')
+        ? 'Extreme heat conditions detected'
+        : 'Environmental disruption detected';
+
+      setDisruptionAlert({
+        type: 'warning',
+        message: `⚠️ ${triggerMessage}. AI protection activated.`,
+        zone: 'Hyderabad',
+        timestamp: new Date().toLocaleTimeString()
+      });
+
+      // Auto-hide alert after 10 seconds
+      setTimeout(() => setDisruptionAlert(null), 10000);
+    }
+  }, [riskAssessment]);
+
+  const handleAutomaticClaim = async () => {
+    setIsProcessingClaim(true);
+    setClaimStatus({
+      status: "processing",
+      message: "AI is processing claim...",
+    });
+
+    await new Promise((res) => setTimeout(res, 3000));
+
+    const result = await processClaim(riskAssessment, worker);
+
+    setClaimStatus({
+      status: result.status,
+      message: result.reason,
+      payout: result.payout,
+      transferMessage: result.transferMessage,
+    });
+
+    if (result.status === "APPROVED") {
+      const updated = {
+        ...analytics,
+        totalEarningsProtected:
+          analytics.totalEarningsProtected + result.payout,
+        totalClaimsTriggered: analytics.totalClaimsTriggered + 1,
+      };
+
+      setAnalytics(updated);
+
+      localStorage.setItem(
+        `gigshield_analytics_${worker.email}`,
+        JSON.stringify(updated)
+      );
+    }
+
+    setIsProcessingClaim(false);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("gigshield_current_user");
+    navigate("/login");
+  };
 
   if (!worker) return null;
 
-  const handleLogout = () => {
-    localStorage.removeItem('devtrails_worker');
-    localStorage.removeItem('devtrails_active');
-    navigate('/');
-  };
-
   return (
-    <div className="min-h-screen bg-slate-50 flex justify-center">
-      <div className="w-full max-w-md bg-white min-h-screen shadow-xl relative pb-20">
-        <div className="bg-indigo-600 p-6 pt-10 text-white pb-16 rounded-b-3xl">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <p className="text-indigo-200 text-sm">Welcome back,</p>
-              <h2 className="text-xl font-bold">{worker.name}</h2>
-            </div>
-            <button onClick={handleLogout} className="text-xs bg-indigo-500/50 hover:bg-indigo-500 px-3 py-1.5 rounded-full transition">
-              Exit
-            </button>
-          </div>
-          
-          {/* Active Coverage Status */}
-          <div className="bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/20">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-indigo-100 text-sm">Active Coverage</span>
-              <span className="flex h-2.5 w-2.5 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-              </span>
-            </div>
-            <div className="text-2xl font-bold flex items-baseline gap-1">
-              ₹800 <span className="text-sm font-normal text-indigo-100">/day protected limit</span>
-            </div>
-            <div className="mt-3 text-xs text-indigo-200">
-              Valid until Sunday, 11:59 PM • Zone: {worker.city} ({worker.pincode})
-            </div>
-          </div>
-        </div>
+    <div className="min-h-screen bg-slate-50">
 
-        <div className="px-5 -mt-8 space-y-4">
-          
-          {/* Analytics Cards */}
-          <h3 className="text-sm font-bold text-slate-700 pl-1">Performance Analytics</h3>
-          
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-white rounded-xl shadow-sm p-4 text-center">
-              <div className="text-2xl font-bold text-green-600">{analytics.totalEarningsProtected.toLocaleString()}</div>
-              <div className="text-xs text-slate-500">Total Earnings Protected</div>
-            </div>
-            <div className="bg-white rounded-xl shadow-sm p-4 text-center">
-              <div className="text-2xl font-bold text-red-600">{analytics.totalIncomeLost.toLocaleString()}</div>
-              <div className="text-xs text-slate-500">Total Income Lost</div>
-            </div>
-            <div className="bg-white rounded-xl shadow-sm p-4 text-center">
-              <div className="text-2xl font-bold text-blue-600">{analytics.totalClaimsTriggered}</div>
-              <div className="text-xs text-slate-500">Claims Triggered</div>
-            </div>
-            <div className="bg-white rounded-xl shadow-sm p-4 text-center">
-              <div className="text-2xl font-bold text-purple-600">{analytics.weeklyCoverageRemaining.toLocaleString()}</div>
-              <div className="text-xs text-slate-500">Weekly Coverage Left</div>
-            </div>
-          </div>
+      <div className="max-w-7xl mx-auto p-4">
 
-          {/* Risk Profiling */}
-          <h3 className="text-sm font-bold text-slate-700 pl-1">Worker Risk Profile</h3>
-          
-          <div className="bg-white rounded-xl shadow-sm p-4">
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-600">Zone Risk:</span>
-                <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold">Medium</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-600">Rain Risk:</span>
-                <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-semibold">High</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-600">Pollution Risk:</span>
-                <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">Low</span>
-              </div>
-            </div>
-          </div>
-          
-          {/* Alerts / Disruption Triggers */}
-          <h3 className="text-sm font-bold text-slate-700 pl-1">Live Zone Monitoring</h3>
-          
-          <div className="space-y-3">
-            <div className="bg-white rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] p-4 border-l-4 border-emerald-500 flex gap-4 items-center">
-              <div className="bg-emerald-100 p-2.5 rounded-full text-xl h-12 w-12 flex items-center justify-center">
-                ☀️
-              </div>
-              <div className="flex-1">
-                <div className="flex justify-between items-start">
-                  <h4 className="font-bold text-slate-800 text-sm">Normal Operations</h4>
-                  <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded font-semibold">SAFE</span>
-                </div>
-                <p className="text-xs text-slate-500 mt-0.5">Weather clear. AQI 85. No disruptions detected in Kukatpally.</p>
-              </div>
-            </div>
+        <div className="grid lg:grid-cols-3 gap-6">
 
-            <div className="bg-amber-50 rounded-xl shadow-sm p-4 border border-amber-200 flex gap-4 items-center opacity-70 grayscale">
-              <div className="bg-amber-100 p-2.5 rounded-full text-xl h-12 w-12 flex items-center justify-center">
-                🌧️
-              </div>
-              <div className="flex-1">
-                <div className="flex justify-between items-start">
-                  <h4 className="font-bold text-slate-700 text-sm">Rainfall Monitor</h4>
-                  <span className="text-xs text-amber-600">INACTIVE</span>
-                </div>
-                <div className="w-full bg-slate-200 rounded-full h-1.5 mt-2 overflow-hidden">
-                  <div className="bg-amber-500 h-1.5 rounded-full" style={{width: '20%'}}></div>
-                </div>
-                <p className="text-[10px] text-slate-500 mt-1 text-right">10mm / 50mm trigger</p>
-              </div>
-            </div>
-          </div>
+          {/* Dashboard */}
+          <div className="lg:col-span-2">
 
-          <div className="mt-6 pt-4 border-t border-slate-100">
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 cursor-pointer hover:bg-slate-100 transition">
-              <div className="flex justify-between items-center">
+            <div className="bg-white shadow-xl rounded-xl p-6">
+
+              <div className="flex justify-between items-center mb-6">
                 <div>
-                  <h4 className="font-semibold text-slate-700 text-sm">Claims History</h4>
-                  <p className="text-xs text-slate-500">View past automatic payouts</p>
+                  <p className="text-sm text-gray-500">Welcome back</p>
+                  <h2 className="text-xl font-bold">{worker.name}</h2>
                 </div>
-                <div className="text-slate-400">→</div>
+
+                <button
+                  onClick={handleLogout}
+                  className="bg-indigo-600 text-white px-4 py-1 rounded"
+                >
+                  Logout
+                </button>
               </div>
+
+              {/* Coverage */}
+              <div className="bg-indigo-600 text-white p-4 rounded-xl mb-6">
+                <h3 className="font-semibold">Coverage Status</h3>
+                <p className="text-2xl font-bold">₹800 / day protected</p>
+              </div>
+
+              {/* Analytics */}
+              <div className="grid grid-cols-2 gap-4 mb-6">
+
+                <div className="bg-white shadow rounded p-3 text-center">
+                  <h3 className="text-green-600 text-xl font-bold">
+                    ₹{analytics.totalEarningsProtected}
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Earnings Protected
+                  </p>
+                </div>
+
+                <div className="bg-white shadow rounded p-3 text-center">
+                  <h3 className="text-red-600 text-xl font-bold">
+                    ₹{analytics.totalIncomeLost}
+                  </h3>
+                  <p className="text-xs text-gray-500">Income Lost</p>
+                </div>
+
+                <div className="bg-white shadow rounded p-3 text-center">
+                  <h3 className="text-blue-600 text-xl font-bold">
+                    {analytics.totalClaimsTriggered}
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Claims Triggered
+                  </p>
+                </div>
+
+                <div className="bg-white shadow rounded p-3 text-center">
+                  <h3 className="text-purple-600 text-xl font-bold">
+                    ₹{analytics.weeklyCoverageRemaining}
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Coverage Remaining
+                  </p>
+                </div>
+
+              </div>
+
+              {/* Risk Score */}
+              <div className="bg-white rounded shadow p-4 mb-6">
+
+                <h3 className="font-semibold mb-3">
+                  AI Risk Assessment
+                </h3>
+
+                {riskAssessment ? (
+                  <div className="text-center">
+
+                    <div className="text-3xl font-bold text-red-500">
+                      {riskAssessment.score}
+                    </div>
+
+                    <p className="text-gray-500 text-sm">
+                      Risk Score
+                    </p>
+
+                    <p className="font-semibold">
+                      {riskAssessment.level}
+                    </p>
+
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    Calculating risk...
+                  </p>
+                )}
+
+              </div>
+
+              {/* Disruption Alert */}
+              {disruptionAlert && (
+                <div className={`p-4 rounded-lg border-l-4 mb-6 animate-slide-in-up ${
+                  disruptionAlert.type === 'warning'
+                    ? 'bg-yellow-50 border-yellow-400 text-yellow-800'
+                    : 'bg-red-50 border-red-400 text-red-800'
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${
+                        disruptionAlert.type === 'warning' ? 'bg-yellow-100' : 'bg-red-100'
+                      }`}>
+                        ⚠️
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-lg">Disruption Alert</h3>
+                        <p className="text-sm">{disruptionAlert.message}</p>
+                        <p className="text-xs mt-1 opacity-75">
+                          Zone: {disruptionAlert.zone} • {disruptionAlert.timestamp}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setDisruptionAlert(null)}
+                      className="text-gray-400 hover:text-gray-600 ml-4"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Claim Status */}
+              {claimStatus && (
+                <div className="p-4 rounded bg-gray-50 border mb-6">
+                  <h3 className="font-semibold">
+                    Claim Status
+                  </h3>
+                  <p>{claimStatus.message}</p>
+
+                  {claimStatus.payout && (
+                    <p className="text-green-600 font-bold">
+                      ₹{claimStatus.payout} credited
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Chart */}
+              <div className="bg-white p-4 rounded shadow">
+                <Bar data={chartData} options={chartOptions} />
+              </div>
+
             </div>
           </div>
+
+          {/* Map */}
+          <div className="hidden lg:block">
+            <RiskMap
+              activeDisruptions={riskAssessment?.triggers || []}
+            />
+          </div>
+
         </div>
+
+        {/* Mobile Map */}
+        <div className="lg:hidden mt-6">
+          <RiskMap
+            activeDisruptions={riskAssessment?.triggers || []}
+          />
+        </div>
+
       </div>
     </div>
   );

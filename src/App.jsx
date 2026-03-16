@@ -6,6 +6,7 @@ import Contact from './pages/Contact';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import WorkerDashboard from './pages/WorkerDashboard';
+import AuthGuard from './components/AuthGuard';
 
 function App() {
   return (
@@ -16,7 +17,11 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/dashboard" element={<WorkerDashboard />} />
+        <Route path="/dashboard" element={
+          <AuthGuard>
+            <WorkerDashboard />
+          </AuthGuard>
+        } />
       </Routes>
     </div>
   );

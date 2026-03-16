@@ -9,7 +9,8 @@ const Signup = () => {
     email: '',
     password: '',
     platform: '',
-    city: ''
+    city: '',
+    weeklyEarnings: ''
   });
   const navigate = useNavigate();
 
@@ -107,6 +108,18 @@ const Signup = () => {
                   <option value="delhi">Delhi</option>
                   <option value="chennai">Chennai</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Weekly Earnings (₹)</label>
+                <input
+                  type="number"
+                  value={formData.weeklyEarnings}
+                  onChange={(e) => setFormData({...formData, weeklyEarnings: e.target.value})}
+                  placeholder="2500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  required
+                />
               </div>
 
               <button

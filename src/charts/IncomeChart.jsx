@@ -46,6 +46,7 @@ const IncomeChart = () => {
     scales: {
       y: {
         beginAtZero: true,
+        stacked: false,
         grid: {
           color: 'rgba(226, 232, 240, 0.5)',
           drawBorder: false,
@@ -56,6 +57,7 @@ const IncomeChart = () => {
         }
       },
       x: {
+        stacked: false,
         grid: {
           display: false,
           drawBorder: false,
@@ -71,27 +73,27 @@ const IncomeChart = () => {
     },
   };
 
-  const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
 
   const data = {
     labels,
     datasets: [
       {
-        label: 'Earnings (Protected)',
-        data: [1200, 1050, 0, 1100, 800, 1400, 950],
-        backgroundColor: '#2563eb', // blue-600
+        label: 'Cost (Premium)',
+        data: [30, 30, 30, 30], // Fixed weekly premium
+        backgroundColor: '#f43f5e', // rose-500
         borderRadius: 4,
       },
       {
-        label: 'Income Lost',
-        data: [0, 0, 1200, 0, 400, 0, 200],
-        backgroundColor: '#ef4444', // red-500
+        label: 'Unearned Income (Risk factor)',
+        data: [0, 400, 0, 800], // Lost income due to rain/traffic
+        backgroundColor: '#94a3b8', // slate-400
         borderRadius: 4,
       },
       {
-        label: 'Claim Payout',
-        data: [0, 0, 1080, 0, 360, 0, 0], // 90% of lost
-        backgroundColor: '#22c55e', // green-500
+        label: 'Gain (AI Payout)',
+        data: [0, 360, 0, 720], // Payouts received
+        backgroundColor: '#10b981', // emerald-500
         borderRadius: 4,
       }
     ],
@@ -100,8 +102,8 @@ const IncomeChart = () => {
   return (
     <div className="glass p-6 rounded-2xl border border-slate-100 shadow-sm w-full h-[350px]">
       <div className="mb-4">
-        <h3 className="text-lg font-bold text-slate-900">Income Overview vs Disruptions</h3>
-        <p className="text-sm text-slate-500">Weekly breakdown of earnings, losses, and GigShield protection payouts.</p>
+        <h3 className="text-lg font-bold text-slate-900">Weekly Gain vs Loss Analysis</h3>
+        <p className="text-sm text-slate-500">Visualizing premium paid against automated parametric payouts received.</p>
       </div>
       <div className="h-[250px]">
         <Bar options={options} data={data} />

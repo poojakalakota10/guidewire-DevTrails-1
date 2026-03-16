@@ -1,161 +1,138 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { FiUser, FiMail, FiLock, FiMapPin, FiBriefcase, FiShield } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
-const Signup = ({ setIsAuthenticated }) => {
+const Signup = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    platform: 'Swiggy',
-    city: 'Hyderabad'
+    platform: '',
+    city: ''
   });
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSignup = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setIsLoading(true);
 
-    setTimeout(() => {
-      // Save full profile
-      localStorage.setItem('gigshield_user_data', JSON.stringify(formData));
-      // Save session
-      localStorage.setItem('gigshield_user', JSON.stringify({ email: formData.email, name: formData.name }));
-      
-      setIsAuthenticated(true);
-      navigate('/dashboard');
-    }, 1500);
+    // Save user to localStorage
+    const users = JSON.parse(localStorage.getItem('gigshield_users') || '[]');
+    const existingUser = users.find(u => u.email === formData.email);
+
+    if (existingUser) {
+      alert('User with this email already exists');
+      return;
+    }
+
+    users.push(formData);
+    localStorage.setItem('gigshield_users', JSON.stringify(users));
+    localStorage.setItem('gigshield_current_user', JSON.stringify(formData));
+
+    alert('Account created successfully!');
+    navigate('/dashboard');
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full glass p-8 rounded-2xl shadow-xl border border-slate-200">
-        
-        <div className="text-center mb-8">
-          <div className="bg-gradient-to-br from-blue-600 to-indigo-600 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-white shadow-lg">
-            <FiShield size={32} />
-          </div>
-          <h2 className="text-3xl font-extrabold text-slate-900">Get Protected</h2>
-          <p className="text-slate-500 mt-2">Create your GigShield AI account</p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <Navbar />
 
-        <form className="space-y-5" onSubmit={handleSignup}>
-          
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                <FiUser />
+      <div className="pt-20 pb-16 px-4">
+        <div className="max-w-md mx-auto">
+          <div className="bg-white rounded-lg shadow-lg p-8">
+            <h1 className="text-3xl font-bold text-center text-gray-900 mb-8">Join GigShield AI</h1>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  required
+                />
               </div>
-              <input 
-                type="text" 
-                required
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                className="pl-10 w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
-                placeholder="John Doe"
-              />
-            </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                <FiMail />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  required
+                />
               </div>
-              <input 
-                type="email" 
-                required
-                value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
-                className="pl-10 w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
-                placeholder="you@example.com"
-              />
-            </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                <FiLock />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                <input
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({...formData, password: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  required
+                />
               </div>
-              <input 
-                type="password" 
-                required
-                value={formData.password}
-                onChange={(e) => setFormData({...formData, password: e.target.value})}
-                className="pl-10 w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
-                placeholder="••••••••"
-                minLength="6"
-              />
-            </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Delivery Platform</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                  <FiBriefcase />
-                </div>
-                <select 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Delivery Platform</label>
+                <select
                   value={formData.platform}
                   onChange={(e) => setFormData({...formData, platform: e.target.value})}
-                  className="pl-10 w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all appearance-none bg-white"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  required
                 >
-                  <option value="Swiggy">Swiggy</option>
-                  <option value="Zomato">Zomato</option>
-                  <option value="Zepto">Zepto</option>
-                  <option value="Blinkit">Blinkit</option>
-                  <option value="Dunzo">Dunzo</option>
+                  <option value="">Select Platform</option>
+                  <option value="swiggy">Swiggy</option>
+                  <option value="zomato">Zomato</option>
+                  <option value="uber">Uber Eats</option>
+                  <option value="doordash">DoorDash</option>
                 </select>
               </div>
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">City</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                  <FiMapPin />
-                </div>
-                <select 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
+                <select
                   value={formData.city}
                   onChange={(e) => setFormData({...formData, city: e.target.value})}
-                  className="pl-10 w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all appearance-none bg-white"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  required
                 >
-                  <option value="Hyderabad">Hyderabad</option>
-                  <option value="Bengaluru">Bengaluru</option>
-                  <option value="Mumbai">Mumbai</option>
-                  <option value="Delhi">Delhi</option>
+                  <option value="">Select City</option>
+                  <option value="hyderabad">Hyderabad</option>
+                  <option value="bangalore">Bangalore</option>
+                  <option value="mumbai">Mumbai</option>
+                  <option value="delhi">Delhi</option>
+                  <option value="chennai">Chennai</option>
                 </select>
               </div>
+
+              <button
+                type="submit"
+                className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors font-semibold"
+              >
+                Create Account
+              </button>
+            </form>
+
+            <div className="mt-6 text-center">
+              <p className="text-gray-600">
+                Already have an account?{' '}
+                <button
+                  onClick={() => navigate('/login')}
+                  className="text-indigo-600 hover:text-indigo-800 font-semibold"
+                >
+                  Login here
+                </button>
+              </p>
             </div>
           </div>
-
-          <button 
-            type="submit"
-            disabled={isLoading}
-            className={`w-full py-3 mt-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all flex justify-center items-center ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
-          >
-            {isLoading ? (
-              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-            ) : 'Create Account'}
-          </button>
-        </form>
-
-        <div className="mt-6 text-center text-sm text-slate-600">
-          Already have an account?{' '}
-          <Link to="/login" className="font-semibold text-blue-600 hover:text-blue-500">
-            Log in here
-          </Link>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 };

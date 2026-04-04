@@ -7,7 +7,8 @@ async function calculateRiskScore(user) {
 
   try {
     // Attempt to get AI-powered risk score
-    const aiResponse = await axios.post('https://guidewire-devtrails-1-1.onrender.com/api/ai/risk-score', {
+    const aiUrl = process.env.AI_SERVICE_URL || 'https://guidewire-devtrails-1-1.onrender.com';
+    const aiResponse = await axios.post(`${aiUrl}/api/ai/risk-score`, {
       zone: user.zone,
       hours_per_week: (user.hoursPerDay || 8) * 5, // Estimate weekly
       platform: user.platform

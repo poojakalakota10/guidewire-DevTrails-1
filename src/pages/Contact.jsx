@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import apiClient from '../api/apiClient';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -8,11 +9,20 @@ const Contact = () => {
     email: '',
     message: ''
   });
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Thank you for your message! We will get back to you soon.');
-    setFormData({ name: '', email: '', message: '' });
+    setLoading(true);
+    try {
+      await apiClient.post('/contact', formData);
+      alert('Thank you for your message! We will get back to you soon.');
+      setFormData({ name: '', email: '', message: '' });
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to send message. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -106,9 +116,12 @@ const Contact = () => {
 
                 <button
                   type="submit"
-                  className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors font-semibold"
+                  disabled={loading}
+                  className="w-full bg-indigo-600 text-white py-3 px-4 rounded-md hover:bg-indigo-700 transition-colors font-semibold flex justify-center items-center"
                 >
-                  Send Message
+                  {loading ? (
+                    <span className="animate-spin rounded-full h-5 w-5 border-t-2 border-white mr-2"></span>
+                  ) : 'Send Message'}
                 </button>
               </form>
             </div>

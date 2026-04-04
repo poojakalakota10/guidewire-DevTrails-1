@@ -6,6 +6,7 @@ import Contact from './pages/Contact';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import WorkerDashboard from './pages/WorkerDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 import AuthGuard from './components/AuthGuard';
 
 function App() {
@@ -20,6 +21,11 @@ function App() {
         <Route path="/dashboard" element={
           <AuthGuard>
             <WorkerDashboard />
+          </AuthGuard>
+        } />
+        <Route path="/admin" element={
+          <AuthGuard requireAdmin={true}>
+            <AdminDashboard />
           </AuthGuard>
         } />
       </Routes>

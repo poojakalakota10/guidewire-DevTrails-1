@@ -15,7 +15,7 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await apiClient.post('/auth/login', { email, password });
+      const response = await apiClient.post('auth/login', { email, password });
       localStorage.setItem('gigshield_token', response.data.token);
       localStorage.setItem('gigshield_user', JSON.stringify(response.data.user));
       

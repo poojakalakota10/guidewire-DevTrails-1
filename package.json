@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && copy dist\\index.html dist\\200.html",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -13,6 +13,7 @@
     "autoprefixer": "^10.4.27",
     "axios": "^1.14.0",
     "chart.js": "^4.5.1",
+    "cors": "^2.8.6",
     "leaflet": "^1.9.4",
     "postcss": "^8.5.8",
     "react": "^19.2.0",

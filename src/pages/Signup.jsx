@@ -25,7 +25,7 @@ const Signup = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await apiClient.post('/auth/register', formData);
+      const response = await apiClient.post('auth/register', formData);
       const user = response.data.user;
       localStorage.setItem('gigshield_token', response.data.token);
       localStorage.setItem('gigshield_user', JSON.stringify(user));

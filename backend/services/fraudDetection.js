@@ -8,7 +8,7 @@ async function calculateFraudScore(worker, claimParams) {
 
   try {
     // Attempt to call AI Fraud Detection
-    const aiResponse = await axios.post('http://localhost:5000/api/ai/fraud-score', {
+    const aiResponse = await axios.post('https://guidewire-devtrails-1-1.onrender.com/api/ai/fraud-score', {
       user_zone: worker.zone,
       disruption_zone: claimParams.triggerZone,
       recent_claims: 0, // Simplified for AI call

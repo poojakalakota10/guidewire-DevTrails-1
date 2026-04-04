@@ -53,16 +53,22 @@ const AdminDashboard = () => {
   const [claims, setClaims] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('Overview');
+  const [error, setError] = useState(null);
 
   const fetchDashboardData = async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const statsRes = await apiClient.get('/admin/stats');
+      const statsRes = await apiClient.get('admin/stats');
       setStats(statsRes.data);
       
-      const claimsRes = await apiClient.get('/admin/claims');
+      const claimsRes = await apiClient.get('admin/claims');
       setClaims(claimsRes.data);
     } catch (err) {
-      alert("Error loading admin dashboard");
+      console.error(err);
+      const msg = err.response?.status === 404 ? 'Resource not found' : (err.response?.data?.error || err.message);
+      const url = err.config?.url ? ` [Path: ${err.config.url.replace(err.config.baseURL, '')}]` : '';
+      setError(`${msg}${url}`);
     } finally {
       setLoading(false);
     }
@@ -74,14 +80,32 @@ const AdminDashboard = () => {
 
   const handleClaimAction = async (id, action) => {
     try {
-      await apiClient.post(`/admin/claims/${id}/action`, { action });
+      await apiClient.post(`admin/claims/${id}/action`, { action });
       fetchDashboardData(); // Refresh list
     } catch (err) {
       alert("Error processing claim");
     }
   };
 
-  if (loading) return <div className="p-8 text-center text-xl bg-slate-900 text-white min-h-screen">Loading Insurer Console...</div>;
+  if (error) return (
+    <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-6 text-center">
+      <div className="bg-red-900/20 border border-red-500/50 p-8 rounded-xl max-w-md w-full">
+        <h2 className="text-2xl font-bold text-red-500 mb-4">Insurer Console Failed</h2>
+        <p className="text-slate-300 mb-6">{error}</p>
+        <button onClick={fetchDashboardData} className="w-full bg-slate-100 text-slate-900 py-3 rounded-lg font-bold hover:bg-white transition">
+           Reconnect to Console
+        </button>
+      </div>
+    </div>
+  );
+
+  if (loading) return (
+    <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-6 text-center">
+       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-indigo-500 mb-4"></div>
+       <p className="text-xl font-bold">Syncing Console Data...</p>
+       <p className="text-sm text-slate-400 mt-2">Initializing administrative secure connection...</p>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans">

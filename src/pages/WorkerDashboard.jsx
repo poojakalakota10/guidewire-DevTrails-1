@@ -34,6 +34,7 @@ const WorkerDashboard = () => {
   const [weather, setWeather] = useState({ rainfall: 0, temp: 30, aqi: 100, curfew: false });
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [loadingAction, setLoadingAction] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -41,11 +42,12 @@ const WorkerDashboard = () => {
   }, [profile?.zone]);
 
   const loadData = async () => {
+    setError(null);
     try {
       const [profRes, polRes, claimsRes] = await Promise.all([
-        apiClient.get('/worker/risk-score'),
-        apiClient.get('/policy/active'),
-        apiClient.get('/claims/my-claims')
+        apiClient.get('worker/risk-score'),
+        apiClient.get('policy/active'),
+        apiClient.get('claims/my-claims')
       ]);
       setProfile(profRes.data);
       setActivePolicy(polRes.data);
@@ -53,12 +55,15 @@ const WorkerDashboard = () => {
       if(profRes.data.zone) fetchWeather(profRes.data.zone);
     } catch (err) {
       console.error(err);
+      const msg = err.response?.status === 404 ? 'Resource not found' : (err.response?.data?.error || err.message);
+      const url = err.config?.url ? ` [Path: ${err.config.url.replace(err.config.baseURL, '')}]` : '';
+      setError(`${msg}${url}`);
     }
   };
 
   const fetchWeather = async (zone) => {
     try {
-      const res = await apiClient.get(`/triggers/status/${zone}`);
+      const res = await apiClient.get(`triggers/status/${zone}`);
       setWeather(res.data);
     } catch (err) {
       console.error("Weather fetch failed");
@@ -68,7 +73,7 @@ const WorkerDashboard = () => {
   const handleBuyPolicy = async (planName, weeklyPremium, payoutPerDay, maxDays) => {
     setLoadingAction(true);
     try {
-      await apiClient.post('/policy/create', { planName, weeklyPremium, payoutPerDay, maxDays });
+      await apiClient.post('policy/create', { planName, weeklyPremium, payoutPerDay, maxDays });
       setShowPlanModal(false);
       alert(`${planName} Activated successfully!`);
       loadData();
@@ -83,7 +88,7 @@ const WorkerDashboard = () => {
     setLoadingAction(true);
     try {
       const triggerDetails = { triggerType: 'Rain Trigger', triggerZone: profile.zone, snapshotData: weather };
-      await apiClient.post('/claims/trigger-demo', triggerDetails);
+      await apiClient.post('claims/trigger-demo', triggerDetails);
       alert('Mock Rain Trigger Fired! Evaluating claim...');
       loadData();
     } catch (err) {
@@ -93,7 +98,25 @@ const WorkerDashboard = () => {
     }
   };
 
-  if (!profile) return <div className="p-10 text-center">Loading Dashboard...</div>;
+  if (error) return (
+    <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-6 text-center">
+      <div className="bg-red-900/20 border border-red-500/50 p-8 rounded-xl max-w-md w-full">
+        <h2 className="text-2xl font-bold text-red-500 mb-4">Connection Failed</h2>
+        <p className="text-slate-300 mb-6">{error}</p>
+        <button onClick={loadData} className="w-full bg-slate-100 text-slate-900 py-3 rounded-lg font-bold hover:bg-white transition">
+           Try Again
+        </button>
+      </div>
+    </div>
+  );
+
+  if (!profile) return (
+    <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-6 text-center">
+       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-indigo-500 mb-4"></div>
+       <p className="text-xl font-bold">Connecting to GigShield API...</p>
+       <p className="text-sm text-slate-400 mt-2">Connecting to Render backend may take up to 60 seconds.</p>
+    </div>
+  );
 
   const chartData = {
     labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],

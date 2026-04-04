@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: 'https://guidewire-devtrails-1-1.onrender.com/api/', // Pointing to Production Render Server with trailing slash
+  baseURL: 'http://localhost:4001/api/', // Pointing to local backend server
   headers: {
     'Content-Type': 'application/json'
   }

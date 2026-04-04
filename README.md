@@ -1,156 +1,93 @@
-# GigShield AI - Guidewire DEVTrails 2026 (Phase 1)
+# GigShield AI - Guidewire DEVTrails 2026 (Phase 2)
 
-GigShield AI is an **AI-powered parametric income insurance platform** designed for gig workers who lose income due to external disruptions. This repository contains the **Phase 1 prototype** for the Guidewire DEVTrails Hackathon.
-
----
-
-## 🎯 Persona & Scenario
-
-**Target Persona:**  
-Food delivery partners (Zomato/Swiggy) operating in Hyderabad, India.
-
-**Example Scenario:**  
-A Swiggy delivery partner loses 2–3 days of income during heavy monsoon flooding in areas like Kukatpally or LB Nagar, with **no financial safety net available today**.
+GigShield AI is an AI-powered parametric income insurance platform designed to protect gig workers from income loss caused by external disruptions such as heavy rain, pollution, extreme heat, and traffic shutdowns.
 
 ---
 
-## 💡 Solution Summary
+## 🚀 Phase 2 – Automation & Protection
 
-GigShield AI provides a **weekly micro-insurance model** where gig workers pay a small premium and receive **automatic payouts** when verified external disruptions occur in their delivery zones.
+This phase delivers a working system with:
 
-⚠️ Note: This is strictly an **income-loss protection product**  
-(No health insurance, no accident coverage, no vehicle repair coverage)
-
----
-
-## 🔄 Application Workflow
-
-1. User signs up and selects their delivery location  
-2. AI performs **risk profiling** based on zone and historical data  
-3. Weekly premium is dynamically calculated  
-4. System continuously monitors:
-   - Weather conditions  
-   - AQI levels  
-   - Traffic disruptions  
-5. When a **parametric trigger** is detected:
-   - Delivery disruption is confirmed  
-6. AI performs **fraud detection & validation checks**  
-7. Claim is automatically triggered  
-8. Instant payout is simulated to the worker  
+- Worker Registration & Login  
+- Insurance Policy Dashboard  
+- Dynamic Premium Calculation  
+- AI-based Risk Assessment  
+- Automated Trigger Detection (Rain, AQI, Heat, Traffic)  
+- Zero-touch Claim Processing  
+- Instant Payout Simulation  
+- Real-time Risk Map (Hyderabad zones)  
 
 ---
 
-## 💳 Weekly Premium Model
+## 🎯 Persona
 
-GigShield operates on an **affordable micro-premium model** optimized for daily wage earners:
-
-- **Premium Range:** ₹35 – ₹80 per week  
-- **Dynamic Pricing:** Based on:
-  - Historical flood data  
-  - AQI trends  
-  - Seasonal risks  
-
-**Example:**
-- Kukatpally during monsoon → ₹75/week  
-- Low-risk zone in winter → ₹35/week  
-
-**Payout:**
-- ₹500 – ₹1200 per day depending on disruption severity  
+Food delivery partners (Swiggy/Zomato) working in Hyderabad who depend on daily earnings and face income loss due to environmental disruptions.
 
 ---
 
-## ⚡ Parametric Triggers (Via Mock APIs)
+## 🔄 Workflow
 
-Claims are automatically triggered when predefined conditions are met:
-
-- 🌧 Heavy Rainfall → > 50mm in 24 hours  
-- 🌫 Hazardous AQI → AQI > 300  
-- 🌊 Flood Alerts → Official city warnings  
-- 🚫 Curfew / Strike → Delivery disruption events  
-
-**Data Sources:**
-- OpenWeatherMap API  
-- Mock JSON APIs  
+1. User registers and selects location  
+2. AI calculates risk score  
+3. Weekly premium is generated  
+4. System monitors weather, AQI, and traffic  
+5. If trigger occurs:
+   - Disruption detected  
+   - Claim auto-triggered  
+   - Payout credited instantly  
 
 ---
 
-## 🤖 AI/ML Integration Plan
+## 💳 Premium Model
 
-GigShield AI integrates intelligence across the full insurance lifecycle:
+- ₹35 – ₹80 per week  
+- Based on zone risk and conditions  
 
-- **Risk Scoring:** Based on geographic and historical data  
-- **Dynamic Premium Engine:** Adjusts weekly pricing in real-time  
-- **Fraud Detection:** Detects anomalies using location validation  
-- **Predictive Forecasting:** Anticipates disruptions before they occur  
+**Payout:** ₹500 – ₹1200/day depending on severity  
 
 ---
 
-## 🚀 Prototype Features (Phase 1)
+## ⚡ Parametric Triggers
 
-- Interactive **Worker Dashboard**
-- AI-based **Risk Score Calculation**
-- **Live Risk Map** (Hyderabad zones)
-- Simulated **Weather, AQI, and Traffic Monitoring**
-- Automatic **Claim Processing Simulation**
-- **Fraud Detection Logic**
-- **Income Analytics (Gained vs Lost)** using charts
-- AI Workflow visualization
+- Heavy Rain (>50mm)  
+- AQI > 300  
+- Flood Alerts  
+- Traffic / Curfew  
 
 ---
 
-## 💻 Platform Choice & Tech Stack
+## 🤖 AI Integration
 
-### 📱 Platform: Progressive Web App (PWA)
-
-**Why?**
-- No installation required  
-- Works on low-end devices  
-- Fast access during deliveries  
+- Risk Scoring  
+- Dynamic Pricing  
+- Fraud Detection  
+- Predictive Monitoring  
 
 ---
 
-### 🛠 Tech Stack
+## 💻 Tech Stack
 
-- **Frontend:** React.js (Vite) + Tailwind CSS  
-- **Backend:** FastAPI (Python)  
-- **Database:** PostgreSQL  
-- **APIs:** OpenWeatherMap + Mock APIs  
-- **Payments:** Razorpay (Test Mode)  
-
----
-
-## 📅 Development Plan (6 Weeks)
-
-### Phase 1 (Weeks 1–2) ✅
-- Persona & workflow design  
-- Prototype UI development  
-- Tech stack finalization  
-
-### Phase 2 (Weeks 3–4)
-- Backend + API integration  
-- Trigger detection system  
-
-### Phase 3 (Weeks 5–6)
-- AI/ML model implementation  
-- Payment integration  
-- Final deployment  
+- Frontend: React + Vite + Tailwind CSS  
+- Backend: FastAPI (Python)  
+- Database: PostgreSQL  
+- APIs: OpenWeatherMap + Mock APIs  
 
 ---
 
 ## 🎥 Demo Video
 
-👉 [(https://drive.google.com/file/d/1XlGr1x_i34_iE0uZrU1DTmuex4_24ylv/view?usp=drivesdk)]
+https://drive.google.com/file/d/1XlGr1x_i34_iE0uZrU1DTmuex4_24ylv/view?usp=drivesdk
 
 ---
 
 ## 👥 Team
 
-- **K.Pooja Bagula** – Team Leader  
-- **M.Sri Varshini** – Developer  
-- **V.Dhannuja** – Developer  
+- Pooja – Team Lead  
+- Varshini – Developer  
+- Dhannuja – Developer  
 
 ---
 
 ## 🌟 Vision
 
-GigShield AI aims to create a **financial safety net for millions of gig workers**, ensuring that **external disruptions do not disrupt their income stability**.
+To provide a reliable financial safety net for gig workers through automated, AI-driven insurance.
